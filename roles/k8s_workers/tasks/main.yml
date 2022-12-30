@@ -1,13 +1,43 @@
 - name: add other hosts 
   tags: etchostschange
   template:
-    src: ~/Documents/Ansible/roles/k8s_workers/templates/hosts.j2
+    src: hosts.j2
     dest: /etc/hosts
     owner: root
     group: root
     mode: 0644
     backup: true
 
+- name: ensure old files are not installed
+  tags: always
+  apt:
+    name:
+      - curl
+      - apt-transport-https
+      - gnupg2
+      - software-properties-common
+      - ca-certificates
+      - conatinerd.io
+      - kubeadm
+      - kubectl
+      - kubelet
+      - docker-ce
+      - docker-ce-cli
+      - docker-compose-plugin
+    state: absent
+
+- name: install required apps
+  tags: always
+  apt:
+    name:
+      - curl
+      - apt-transport-https
+      - gnupg2
+      - software-properties-common
+      - ca-certificates
+    state: latest
+    update_cache: true
+  changed_when: false
 
 - name: add docker gpg key
   tags: gpg

@@ -1,39 +1,9 @@
 ---
 
-- hosts: k8s
+- hosts: k8s_lb
   become: true
-  pre_tasks:
-
-  - name: ensure old files are not installed
-    tags: always
-    apt:
-      name:
-        - curl
-        - apt-transport-https
-        - gnupg2
-        - software-properties-common
-        - ca-certificates
-        - conatinerd.io
-        - kubeadm
-        - kubectl
-        - kubelet
-        - docker-ce
-        - docker-ce-cli
-        - docker-compose-plugin
-      state: absent
-  
-  - name: install required apps
-    tags: always
-    apt:
-      name:
-        - curl
-        - apt-transport-https
-        - gnupg2
-        - software-properties-common
-        - ca-certificates
-      state: latest
-      update_cache: true
-    changed_when: false
+  roles:
+    - k8s_lb
 
 - hosts: k8s_controllers[0]
   become: true

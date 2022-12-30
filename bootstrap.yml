@@ -1,0 +1,15 @@
+---
+
+- hosts: all
+  become: true
+  vars_prompt:
+
+    - name: ssh_user
+      prompt: Enter username of the account Ansible will use to create the cluster
+      private: false
+
+    - name: ssh_pub_key
+      prompt: Paste the SSH Public Key for that account
+      private: false
+  roles: 
+    - base

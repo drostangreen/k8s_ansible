@@ -1,8 +1,8 @@
 - name: Install updates
-    tags: always
-    apt:
-      upgrade: dist
-      update_cache: yes
+  tags: always
+  apt:
+    upgrade: dist
+    update_cache: yes
 
 - name: install text editors
   tags: always
@@ -27,21 +27,21 @@
     enabled: true
   when: ansible_system_vendor == "QEMU"
 
-- name: create ansible user
+- name: create ssh user
   user:
-    name: ansible
+    name: "{{ ssh_user }}"
         
-- name: add ansible ssh key
+- name: add ssh key
   tags: always
   authorized_key:
-    user: ansible
-    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN/Kb8q4xM8E8WbLBFOqesGc1g354TK/kOZwnDRNh+3P ansible"
+    user: "{{ ssh_user }}"
+    key: "{{ ssh_pub_key }}"
 
-- name: add sudoers file for ansible
+- name: add sudoers file
   tags: always
-  copy:
-    src: sudoer_ansible
-    dest: /etc/sudoers.d/ansible
+  template:
+    src: sudoer_ansible.j2
+    dest: "/etc/sudoers.d/sudoer_{{ ssh_user }}"
     owner: root
     group: root
     mode: 0440

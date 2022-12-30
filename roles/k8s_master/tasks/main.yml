@@ -1,0 +1,45 @@
+---
+
+# Bootstrap cluster
+
+- name: create cluster
+  shell: kubeadm init --pod-network-cidr=10.244.0.0/16 --cri-socket /run/containerd/containerd.sock --upload-certs --control-plane-endpoint={{ lb-vip-address }}
+
+- name: make .kube directory
+  file:
+    path: "/home/{{ item }}/.kube"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: 0751
+    state: directory
+  with_items: "{{ kubeuser }}"
+
+- name: allow item non root kubectl
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "/home/{{ item }}/.kube/config"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: 0600
+    remote_src: true
+  with_items: "{{ kubeuser }}"
+
+# get join commands
+
+- name: get join command for control planes
+  shell: echo $(kubeadm token create --print-join-command) --control-plane --certificate-key $(kubeadm init phase upload-certs --upload-certs | grep -vw -e certificate -e Namespace)
+  register: controlplanejoin
+
+- set_fact: controlplanejoin={{ controlplanejoin.stdout }}
+
+- name: get join command for workers
+  shell: kubeadm token create --print-join-command
+  register: workerjoin
+
+- set_fact: workerjoin={{ workerjoin.stdout }}
+
+# apply an overlay network
+
+- name: apply overlay network
+  become: false
+  command: "kubectl apply -f {{ overlay_network }}"

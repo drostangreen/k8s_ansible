@@ -1,0 +1,47 @@
+- name: Install updates
+    tags: always
+    apt:
+      upgrade: dist
+      update_cache: yes
+
+- name: install text editors
+  tags: always
+  apt:
+    name: 
+      - vim
+      - nano
+    state: latest
+
+- name: install QEMU guest agent if Proxmox VM
+  tags: qemu,vm,proxmox
+  apt:
+    name: qemu-guest-agent
+    state: latest
+  when: ansible_system_vendor == "QEMU"
+
+- name: start and enable guest agent service
+  tags: qemu,vm,proxmox
+  service:
+    name: qemu-guest-agent
+    state: started
+    enabled: true
+  when: ansible_system_vendor == "QEMU"
+
+- name: create ansible user
+  user:
+    name: ansible
+        
+- name: add ansible ssh key
+  tags: always
+  authorized_key:
+    user: ansible
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN/Kb8q4xM8E8WbLBFOqesGc1g354TK/kOZwnDRNh+3P ansible"
+
+- name: add sudoers file for ansible
+  tags: always
+  copy:
+    src: sudoer_ansible
+    dest: /etc/sudoers.d/ansible
+    owner: root
+    group: root
+    mode: 0440

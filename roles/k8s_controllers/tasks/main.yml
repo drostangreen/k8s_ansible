@@ -1,0 +1,29 @@
+---
+
+- name: join as control plane
+  command: "{{ hostvars[groups['k8s_controllers'][0]]['controlplanejoin'] }}"
+
+- name: make .kube directory
+  file:
+    path: "/home/{{ item }}/.kube"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: 0751
+    state: directory
+  with_items: "{{ kubeuser }}"
+
+- name: allow item non root kubectl
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "/home/{{ item }}/.kube/config"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: 0600
+    remote_src: true
+  with_items: "{{ kubeuser }}"
+
+# apply an overlay network
+
+- name: apply overlay network
+  become: false
+  command: "kubectl apply -f {{ overlay_network }}"

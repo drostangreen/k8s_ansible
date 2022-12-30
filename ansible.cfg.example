@@ -1,0 +1,6 @@
+[defaults]
+inventory = inventory.example
+default_become = true
+default_become_user = koob
+remote_user = koob
+private_key_file = ~/.ssh/koob

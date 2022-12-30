@@ -1,0 +1,26 @@
+[k8s_workers]
+k8s-worker ansible_ssh_host=
+
+[k8s_workers:vars]
+
+
+[k8s_controllers]
+k8s-ctrlr ansible_ssh_host=
+
+[k8s_controllers:vars]
+kubeuser=['user1','user2']
+overlay_network={{  }}
+flannel=https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+
+[k8s:children]
+k8s_workers
+k8s_controllers
+
+[k8s_lb]
+lb1 ansible_ssh_host=
+
+[k8s_lb:vars]
+lb-vip-address=
+
+[all:vars]
+domain=example.com

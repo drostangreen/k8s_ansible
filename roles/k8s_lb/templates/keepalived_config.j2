@@ -1,0 +1,16 @@
+vrrp_instance VI_1 {
+  state MASTER
+  interface {{ hostvars[inventory_hostname]['ansible_facts']['default_ipv4']['interface'] }}
+  virtual_router_id 55
+  priority 150
+  advert_int 1
+
+  authentication {
+    auth_type PASS
+    auth_pass C3P9K9gc
+  }
+
+  virtual_ipaddress {
+    {{ lb_vip_ip }}
+  }
+}

@@ -1,0 +1,53 @@
+---
+
+# Install Packages for HA Loadbalancer
+
+- name: install nginx and keepalived
+  tags: lb,nginx,api-lb,keepalived
+  apt:
+    name: 
+      - nginx
+      - keepalived
+    update_cache: true
+    state: latest
+
+# Set the config files
+
+- name: configure nginx
+  tags: lb,nginx,api-lb
+  template:
+    src: nginx_config_ubuntu.j2
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: 0644
+  register: nginxconf
+
+- name: configure keepalived
+  tags: lb,keepalived,api-lb
+  template:
+    src: keepalived_config.j2
+    dest: /etc/keepalived/keepalived.conf
+    owner: root
+    group: root
+    mode: 0644
+  register: keepalivedconf
+
+
+# Restart Services
+
+- name: restart nginx after config changed
+  tags: lb,nginx,api-lb,service
+  service:
+    name: nginx
+    enabled: true
+    state: restarted
+  when: nginxconf.changed
+
+- name: restart keepalived after config changed
+  tags: lb,keepalived,api-lb,service
+  service:
+    name: keepalived
+    enabled: true
+    state: restarted
+  when: keepalivedconf.changed

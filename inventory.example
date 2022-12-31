@@ -20,7 +20,8 @@ k8s_controllers
 lb1 ansible_ssh_host=
 
 [k8s_lb:vars]
-lb-vip-address=
+lb_vip_address=
+lb_vip_ip=
 
 [all:vars]
 domain=example.com

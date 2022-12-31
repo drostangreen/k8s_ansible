@@ -1,0 +1,19 @@
+{% if ansible_virtualization_type == "lxc" %}
+load_module /usr/lib/nginx/modules/ngx_stream_module.so;
+{% endif %}
+
+
+events {}
+
+stream {
+  upstream k8s_controllers {
+        {% for inventory_hostname in groups['k8s_controllers'] %}
+        {{ hostvars[inventory_hostname].ansible_ssh_host }}:6443;
+        {% endfor %}
+  }
+
+  server {
+    listen 6443;
+    proxy_pass k8s_controllers;
+  }
+}

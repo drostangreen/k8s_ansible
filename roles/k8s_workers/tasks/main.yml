@@ -71,7 +71,7 @@
 - name: set up containerd config file from template
   tags: containerd
   template:
-    src: ~/Documents/Ansible/roles/k8s_workers/templates/containerd_config_ubuntu.j2
+    src: containerd_config_ubuntu.j2
     dest: /etc/containerd/config.toml
     owner: root
     group: root

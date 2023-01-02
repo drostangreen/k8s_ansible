@@ -13,7 +13,7 @@
   become: true
   roles:
     - k8s_workers
-    - k8s_controllers
+    - k8s_master
 
 # Join the other Control Planes
 
@@ -30,3 +30,9 @@
   roles:
     - k8s_workers
 
+- hosts: k8s_workers
+  become: true
+  tasks:
+
+    - name: join worker to cluster
+      command: "{{ hostvars[groups['k8s_controllers'][0]]['workerjoin'] }}"

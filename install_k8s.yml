@@ -1,9 +1,13 @@
 ---
 
+# Prepare the Load Balancers
+
 - hosts: k8s_lb
   become: true
   roles:
     - k8s_lb
+
+# Create Master node and bootstrap the cluster
 
 - hosts: k8s_controllers[0]
   become: true
@@ -11,12 +15,15 @@
     - k8s_workers
     - k8s_controllers
 
+# Join the other Control Planes
+
 - hosts: k8s_controllers:!k8s_controllers[0]
   become: true
   roles:
-    - k8s_controllers
     - k8s_workers
-  when: inventory_hostname in groups['k8s_controllers'][0]
+    - k8s_controllers
+
+# Create and join the workers
 
 - hosts: k8s_workers
   become: true

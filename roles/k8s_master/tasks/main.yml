@@ -3,7 +3,7 @@
 # Bootstrap cluster
 
 - name: create cluster
-  shell: kubeadm init --pod-network-cidr=10.244.0.0/16 --cri-socket /run/containerd/containerd.sock --upload-certs --control-plane-endpoint={{ lb-vip-address }}
+  shell: kubeadm init --pod-network-cidr={{ pod_network_cidr }} --cri-socket /run/containerd/containerd.sock --upload-certs --control-plane-endpoint={{ lb-vip-address }}
 
 - name: make .kube directory
   file:

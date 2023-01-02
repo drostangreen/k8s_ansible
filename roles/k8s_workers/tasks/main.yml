@@ -131,3 +131,5 @@
     state: started
     enabled: true
 
+- name: join worker to cluster
+  command: "{{ hostvars[groups['k8s_controllers'][0]]['workerjoin'] }}"

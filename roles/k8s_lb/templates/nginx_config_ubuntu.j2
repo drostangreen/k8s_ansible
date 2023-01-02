@@ -8,7 +8,7 @@ events {}
 stream {
   upstream k8s_controllers {
         {% for inventory_hostname in groups['k8s_controllers'] %}
-        {{ hostvars[inventory_hostname].ansible_ssh_host }}:6443;
+        server  {{ hostvars[inventory_hostname].ansible_ssh_host }}:6443;
         {% endfor %}
   }
 

@@ -42,7 +42,6 @@
     name: nginx
     enabled: true
     state: restarted
-  when: nginxconf.changed
 
 - name: restart keepalived after config changed
   tags: lb,keepalived,api-lb,service
@@ -50,4 +49,3 @@
     name: keepalived
     enabled: true
     state: restarted
-  when: keepalivedconf.changed

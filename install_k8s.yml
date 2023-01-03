@@ -1,5 +1,12 @@
 ---
 
+# Prepare all K8s Nodes
+
+- hosts: k8s
+  become: true
+  roles:
+    - base
+
 # Prepare the Load Balancers
 
 - hosts: k8s_lb
@@ -12,7 +19,6 @@
 - hosts: k8s_controllers[0]
   become: true
   roles:
-    - k8s_workers
     - k8s_master
 
 # Join the other Control Planes
@@ -20,15 +26,9 @@
 - hosts: k8s_controllers:!k8s_controllers[0]
   become: true
   roles:
-    - k8s_workers
     - k8s_controllers
 
-# Create and join the workers
-
-- hosts: k8s_workers
-  become: true
-  roles:
-    - k8s_workers
+# Join the workers
 
 - hosts: k8s_workers
   become: true

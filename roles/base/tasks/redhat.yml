@@ -1,0 +1,128 @@
+- name: add other hosts 
+  tags: etchostschange
+  template:
+    src: hosts.j2
+    dest: /etc/hosts
+    owner: root
+    group: root
+    mode: 0644
+    backup: true
+
+- name: ensure old files are not installed
+  tags: always
+  dnf:
+    name:
+      - docker
+      - docker-client
+      - docker-client-latest
+      - docker-common
+      - docker-latest
+      - docker-latest-logrotate
+      - docker-logrotate
+      - docker-selinux
+      - docker-engine-selinux
+      - docker-engine
+    state: absent
+
+- name: install required apps
+  tags: always
+  dnf:
+    name:
+      - dnf-plugins-core
+    state: latest
+    update_cache: true
+  changed_when: false 
+
+- name: add docker repo
+  tags: repo,containerd
+  yum_repository:
+    name: docker
+    state: present
+    baseurl: https://download.docker.com/linux/{{ ansible_distribution|lower }}/docker-ce.repo
+
+- name: install containerd
+  tags: containerd
+  apt:
+    name: containerd.io
+    update_cache: true
+
+- name: create /etc/containerd directory
+  tags: containerd
+  file:
+    path: /etc/containerd
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: set up containerd config file from template
+  tags: containerd
+  template:
+    src: containerd_config_{{ ansible_distribution|lower }}.j2
+    dest: /etc/containerd/config.toml
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Disable SWAP since kubernetes can't work with swap enabled (1/2)
+  tags: swap
+  shell: |
+    swapoff -a
+
+- name: Disable SWAP in fstab since kubernetes can't work with swap enabled (2/2)
+  tags: swap
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+    replace: '# \1'
+
+- name: enable ip forwarding in sysctl.conf
+  shell: |
+    cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf > /dev/null
+    net.bridge.bridge-nf-call-iptables  = 1
+    net.bridge.bridge-nf-call-ip6tables = 1
+    net.ipv4.ip_forward                 = 1
+    EOF
+
+- name: enable br_netfilter
+  shell: echo 'overlay \nbr_netfilter' | sudo tee /etc/modules-load.d/k8s.conf > /dev/null
+
+- name: reboot machine before installing k8s
+  reboot:
+
+- name: add k8s gpg key and repo
+  tags: gpg,repo
+  yum_repository:
+    name: Kubernetes
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+    gpgkey: https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+    exclude: 
+      - kubelet
+      - kubeadm
+      - kubectl
+    enabled: true
+    gpgcheck: true
+
+- name: disable selinux (1/2)
+  tags: selinux
+  command: setenforce 0
+
+- name: disable selinux (2/2)
+  tags: selinux
+  selinux:
+    state: permissive
+
+- name: install k8s required packages
+  dnf:
+    name:
+      - kubeadm
+      - kubectl
+      - kubelet
+    disable_excludes: kubernetes
+
+- name: ensure that kubelet service is enabled
+  tags: kubelet
+  service:
+    name: kubelet
+    state: started
+    enabled: true

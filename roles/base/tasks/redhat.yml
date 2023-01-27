@@ -33,16 +33,15 @@
     update_cache: true
   changed_when: false 
 
-- name: add docker repo
-  tags: repo,containerd
-  yum_repository:
-    name: docker-ce-stable
-    description: Docker CE Stable - $basearch
-    state: present
-    baseurl: https://download.docker.com/linux/{{ ansible_distribution|lower }}/docker-ce.repo
-    gpgkey: https://download.docker.com/linux/{{ ansible_distribution|lower }}/gpg
-    enabled: true
-    gpgcheck: true
+- name: add docker repo Fedora
+  tags: repo,containerd,fedora
+  command: dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+  when: ansible_distribution == "Fedora"
+
+- name: add docker repo Centos
+  tags: repo,containerd,centos
+  command: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  when: ansible_distribution != "Fedora"
 
 - name: install containerd
   tags: containerd

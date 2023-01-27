@@ -1,3 +1,9 @@
+- name: change hostname
+  tags: etchostschange
+  hostname:
+    name: "{{ inventory_hostname }}"
+    use: systemd
+
 - name: add other hosts 
   tags: etchostschange
   template:
